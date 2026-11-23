@@ -5,7 +5,7 @@ const assert = require('node:assert');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const { errorEvidence, ERROR_EVIDENCE_RE: ERROR_EVIDENCE } = require('../src/error-evidence.js');
+const { errorEvidence, ERROR_EVIDENCE_RE: ERROR_EVIDENCE } = require('../src/faultclip.js');
 
 const BUDGET = 600;
 const filler = (n) => Array.from({ length: n }, (_, i) => `  progress line ${i} ok`).join('\n');
@@ -144,7 +144,7 @@ test('a 601-unit emoji text is cut without splitting a pair', () => {
 });
 
 test('importing the module prints nothing', () => {
-  const run = spawnSync(process.execPath, ['-e', "require('./src/error-evidence.js')"], {
+  const run = spawnSync(process.execPath, ['-e', "require('./src/faultclip.js')"], {
     cwd: path.join(__dirname, '..'),
     encoding: 'utf8',
   });

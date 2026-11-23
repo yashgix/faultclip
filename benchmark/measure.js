@@ -4,7 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
-const { errorEvidence, ERROR_EVIDENCE_RE } = require('../src/error-evidence.js');
+const { errorEvidence, ERROR_EVIDENCE_RE } = require('../src/faultclip.js');
 
 const BUDGET = 600;
 const KEY = /(error|exception|traceback|failed|fatal)/i;

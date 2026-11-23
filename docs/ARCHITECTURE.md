@@ -1,6 +1,6 @@
 # Architecture
 
-`src/error-evidence.js` is one dependency-free module. It exports `errorEvidence(text, errorRe, budget)` and the default
+`src/faultclip.js` is one dependency-free module. It exports `errorEvidence(text, errorRe, budget)` and the default
 error pattern `ERROR_EVIDENCE_RE`.
 
 ```
@@ -36,6 +36,6 @@ empty string for non-empty text.
 
 ## Tests
 
-`test/error-evidence.test.js` (23 tests) covers common tool output (npm, cargo and others), tracebacks, test logs,
+`test/faultclip.test.js` (23 tests) covers common tool output (npm, cargo and others), tracebacks, test logs,
 all-clear counts, results exactly at the budget, emoji at a cut, carriage returns, whitespace-only text, a
 million-line result, and that importing the module prints nothing.

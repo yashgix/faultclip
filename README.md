@@ -1,18 +1,18 @@
-# error-evidence
+# faultclip
 
-Keep the lines that explain a failed command when tool output has to fit a fixed character budget.
+Preserve critical failure context when coding-agent output exceeds its character budget.
 
 Agent tools often cut a command's output to its first few hundred characters. For a test run or a traceback, the
 decisive line (`ValueError: bad shape`, the failing test, `npm ERR! code ERESOLVE`) sits near the end, so the cut
 removes exactly what the next reader needs. `errorEvidence` keeps that line inside the same budget.
 
 ```js
-const { errorEvidence, ERROR_EVIDENCE_RE } = require('./src/error-evidence');
+const { errorEvidence, ERROR_EVIDENCE_RE } = require('./src/faultclip');
 
 errorEvidence(output, ERROR_EVIDENCE_RE, 600); // at most 600 UTF-16 units
 ```
 
-The package is not published to npm. Copy `src/error-evidence.js` into your project, or clone this repository and require
+The package is not published to npm. Copy `src/faultclip.js` into your project, or clone this repository and require
 it by path.
 
 Output that already fits is returned unchanged. Otherwise the result joins these lines with `...`, in this priority:

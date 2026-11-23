@@ -14,7 +14,7 @@ SEED, PAGES, PAGE_SIZE, CHUNK = 20261122, 6, 50, 10
 
 
 def get(url):
-    request = urllib.request.Request(url, headers={'User-Agent': 'error-evidence-benchmark'})
+    request = urllib.request.Request(url, headers={'User-Agent': 'faultclip-benchmark'})
     for attempt in range(6):
         try:
             with urllib.request.urlopen(request, timeout=90) as response:

@@ -2,6 +2,8 @@
 
 Preserve critical failure context when coding-agent output exceeds its character budget.
 
+[Live page and interactive demo](https://yashgix.github.io/faultclip/)
+
 Agent tools often cut a command's output to its first few hundred characters. For a test run or a traceback, the
 decisive line (`ValueError: bad shape`, the failing test, `npm ERR! code ERESOLVE`) sits near the end, so the cut
 removes exactly what the next reader needs. `errorEvidence` keeps that line inside the same budget.

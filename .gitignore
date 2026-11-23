@@ -1,0 +1,4 @@
+node_modules/
+benchmark/data/
+__pycache__/
+.DS_Store

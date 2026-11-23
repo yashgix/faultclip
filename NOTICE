@@ -1,0 +1,9 @@
+The benchmark downloads two public datasets and does not redistribute them. The demo page includes three modified excerpts from the second one.
+
+SWE-Gym OpenHands-SFT-Trajectories (revision 4aaa5a4a4b5861f4799d2336908760c190ac3b17), https://huggingface.co/datasets/SWE-Gym/OpenHands-SFT-Trajectories.
+The dataset card states the MIT licence. The SWE-Gym code repository is under Apache-2.0. Both permit this use.
+
+"OpenHands Trajectories with Qwen3-Coder-480B-A35B-Instruct" (revision 35455389ab51bf5e2306bfd436ef72d0f98bf882),
+Trofimova et al., Nebius, 2025, https://huggingface.co/datasets/nebius/SWE-rebench-openhands-trajectories,
+licensed CC BY 4.0, https://creativecommons.org/licenses/by/4.0/. Used without endorsement. Example failures shown in
+the demo page are excerpts, with workspace paths shortened and long runs of spaces reduced for display.

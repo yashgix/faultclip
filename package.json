@@ -1,0 +1,22 @@
+{
+  "name": "error-evidence",
+  "version": "1.0.0",
+  "description": "Keep the lines that explain a failed command when tool output must fit a fixed character budget.",
+  "license": "MIT",
+  "author": "Yash Gupta",
+  "private": true,
+  "main": "src/error-evidence.js",
+  "files": [
+    "src"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test test/error-evidence.test.js",
+    "lint": "npx --yes eslint@10.15.0 .",
+    "format": "npx --yes prettier@3.10.1 --write .",
+    "format:check": "npx --yes prettier@3.10.1 --check .",
+    "bench": "python3 -I benchmark/fetch.py && python3 -I benchmark/prepare.py && node benchmark/measure.js"
+  }
+}

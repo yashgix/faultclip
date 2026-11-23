@@ -1,0 +1,19 @@
+{
+  "budget": 600,
+  "development": {
+    "sessions": 280,
+    "failures": 826,
+    "withKeyLine": 719,
+    "firstCharactersKept": 233,
+    "errorEvidenceKept": 717,
+    "overBudget": 0
+  },
+  "unseen": {
+    "sessions": 208,
+    "failures": 1058,
+    "withKeyLine": 724,
+    "firstCharactersKept": 176,
+    "errorEvidenceKept": 473,
+    "overBudget": 0
+  }
+}

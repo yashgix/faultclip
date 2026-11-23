@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>error-evidence</title><meta name="description" content="Keep the lines that explain a failed command when tool output must fit a fixed character budget."><style>
+:root{color-scheme:light;--paper:#fffdf9;--band:#f6f2eb;--ink:#201c18;--muted:#645c54;--line:#e4ddd3;--accent:#b5400f;--accent-soft:#fbe9df;
+--good:#17694a;--good-soft:#dcf1e7;--bad:#a8321f;--bad-soft:#fae3dd;--code:#f3efe8;--bar:#b9b0a5;
+--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;--mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--paper:#16181b;--band:#1e2125;--ink:#efebe4;--muted:#a8a29a;--line:#33373d;--accent:#f0905f;--accent-soft:#3c2619;
+--good:#74d6ab;--good-soft:#17382b;--bad:#f39b88;--bad-soft:#42211b;--code:#111316;--bar:#6c675f}}
+:root[data-theme="dark"]{color-scheme:dark;--paper:#16181b;--band:#1e2125;--ink:#efebe4;--muted:#a8a29a;--line:#33373d;--accent:#f0905f;--accent-soft:#3c2619;
+--good:#74d6ab;--good-soft:#17382b;--bad:#f39b88;--bad-soft:#42211b;--code:#111316;--bar:#6c675f}
+*{box-sizing:border-box}html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.62 var(--sans)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}.narrow{max-width:760px}
+header{padding:64px 0 28px}.eyebrow{font:600 13px/1.4 var(--sans);letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+h1{font-size:clamp(34px,5.6vw,54px);line-height:1.06;letter-spacing:-.025em;margin:0 0 18px;max-width:18em}
+.lede{font-size:clamp(18px,2.2vw,21px);line-height:1.5;color:var(--muted);max-width:40em;margin:0}
+.notice{display:inline-block;margin-top:20px;padding:6px 12px;border:1px solid var(--line);border-radius:6px;font-size:14px;color:var(--muted);background:var(--band)}
+.tabbar{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--line)}
+[role=tablist]{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+[role=tab]{appearance:none;background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);cursor:pointer;font:600 16px/1.3 var(--sans);padding:15px 16px 12px;white-space:nowrap}
+[role=tab]:hover{color:var(--ink)}[role=tab][aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+section{padding:46px 0;border-bottom:1px solid var(--line)}section:last-child{border-bottom:0}
+h2{font-size:clamp(25px,3.2vw,33px);line-height:1.16;letter-spacing:-.015em;margin:0 0 14px;max-width:24em}
+h3{font-size:18px;line-height:1.3;margin:0 0 6px}p{margin:0 0 14px;max-width:44em}.muted{color:var(--muted)}.small{font-size:14.5px}
+code{font:.88em var(--mono);background:var(--code);padding:.08em .3em;border-radius:4px;overflow-wrap:anywhere}
+ul{padding-left:21px;max-width:44em;margin:0}li{margin:7px 0}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:26px}
+.stats>div{padding:20px 20px 20px 0}.stats b{display:block;font-size:clamp(28px,3.6vw,38px);line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}.stats span{display:block;margin-top:7px;color:var(--muted);font-size:14.5px;line-height:1.4}
+.demo{background:var(--band);border:1px solid var(--line);border-radius:10px;padding:18px;margin-top:20px}
+.controls{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin-bottom:14px}.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{appearance:none;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:6px 13px;font:500 14px/1.3 var(--sans);cursor:pointer}
+.chip[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.budget{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}.budget input{width:150px;accent-color:var(--accent)}
+.cmd{font:13px/1.5 var(--mono);color:var(--muted);margin:0 0 12px;overflow-wrap:anywhere}.cmd b{color:var(--ink);font-weight:600}
+.compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.panel{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px;min-width:0}
+.panel h3{font-size:15px;margin:0}.verdict{font-size:13.5px;font-weight:650;margin:3px 0 9px}.yes{color:var(--good)}.no{color:var(--bad)}
+pre{margin:0;background:var(--code);border-radius:6px;padding:11px;font:12.5px/1.55 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto}
+mark{background:var(--good-soft);color:inherit;font-weight:700;border-radius:2px;padding:0 1px}
+textarea{display:block;width:100%;min-height:110px;margin:0 0 12px;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);font:12.5px/1.5 var(--mono);resize:vertical}
+.link{appearance:none;background:none;border:0;padding:0;color:var(--accent);font:600 14px/1.4 var(--sans);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.flow{display:flex;align-items:stretch;gap:0;margin:22px 0 8px}.step{flex:1;min-width:0;background:var(--band);border:1px solid var(--line);border-radius:8px;padding:13px}
+.step b{display:block;font-size:14.5px;line-height:1.3;margin-bottom:5px}.step span{display:block;font-size:13.5px;line-height:1.42;color:var(--muted)}.step.key{background:var(--accent-soft);border-color:var(--accent)}
+.arrow{flex:none;width:26px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:17px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 34px;margin-top:20px}.grid2 p{margin:0;font-size:16px;color:var(--muted)}
+.bars{margin-top:18px;max-width:780px}.barrow{display:grid;grid-template-columns:150px 1fr 104px;gap:10px;align-items:center;margin:7px 0;font-size:14.5px}.track{height:18px;background:var(--code);border-radius:3px;overflow:hidden}
+.fill{height:100%;background:var(--bar)}.fill.new{background:var(--accent)}.num{text-align:right;font-variant-numeric:tabular-nums}.bargroup{font-weight:650;margin:18px 0 3px;font-size:15px}
+.tablewrap{overflow-x:auto;margin-top:16px;border:1px solid var(--line);border-radius:8px}table{border-collapse:collapse;width:100%;font-size:14.5px;font-variant-numeric:tabular-nums}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}th{background:var(--band);font-weight:650;white-space:nowrap}tr:last-child td{border-bottom:0}
+.ci{margin-top:18px;max-width:780px}.cirow{display:grid;grid-template-columns:210px 1fr 130px;gap:12px;align-items:center;margin:11px 0;font-size:14.5px}.ciplot{position:relative;height:22px}
+.ciplot:before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--line)}.zero{position:absolute;left:50%;top:0;bottom:0;border-left:1px dashed var(--muted)}
+.range{position:absolute;top:calc(50% - 2px);height:4px;background:var(--accent);border-radius:2px}.dot{position:absolute;top:calc(50% - 6px);width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--accent);border:2px solid var(--paper)}
+.axis{display:grid;grid-template-columns:210px 1fr 130px;gap:12px;font-size:12.5px;color:var(--muted)}.axis div:nth-child(2){display:flex;justify-content:space-between}
+.callout{border-left:3px solid var(--accent);background:var(--accent-soft);padding:12px 15px;border-radius:0 6px 6px 0;margin:18px 0 0;max-width:46em;font-size:16px}
+.sim{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:14px}.cases{display:flex;flex-direction:column;gap:4px;max-height:430px;overflow:auto}
+.case{appearance:none;width:100%;text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:8px 10px;color:var(--ink);font:500 14px/1.3 var(--sans);cursor:pointer;display:flex;justify-content:space-between;gap:8px}
+.case[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}.tag{flex:none;font-size:12px;font-weight:700}
+.outcomes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.outcome{border-radius:7px;padding:11px 12px;border:1px solid var(--line)}.outcome small{display:block;color:var(--muted);font-size:12.5px}.outcome b{font-size:17px}
+.outcome.up{background:var(--bad-soft)}.outcome.up b{color:var(--bad)}.outcome.block{background:var(--good-soft)}.outcome.block b{color:var(--good)}
+footer{padding:28px 0 46px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}a{color:var(--accent);text-underline-offset:2px}
+[hidden]{display:none!important}
+@media (max-width:760px){body{font-size:16px}.wrap{padding:0 16px}header{padding:38px 0 20px}section{padding:34px 0}.stats,.compare,.grid2,.sim,.outcomes{grid-template-columns:1fr}.stats>div{padding:14px 0;border-bottom:1px solid var(--line)}.stats>div:last-child{border-bottom:0}
+.flow{flex-direction:column}.arrow{width:auto;height:22px;transform:rotate(90deg)}.barrow{grid-template-columns:96px 1fr 88px;gap:7px;font-size:13.5px}.cirow,.axis{grid-template-columns:1fr}.cirow{gap:3px;margin:15px 0}.axis div:first-child,.axis div:last-child{display:none}.demo{padding:12px}.cases{max-height:260px}[role=tab]{font-size:15px;padding:13px 10px 10px}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style></head>
+<body><div class="wrap"><header><p class="eyebrow">error-evidence</p><h1>When a command fails, the next agent should see why</h1><p class="lede">A small, dependency-free library that keeps the lines explaining a failure when tool output must fit a fixed character budget.</p></header></div><div class="tabbar"><div class="wrap"><div role="tablist" aria-label="Sections"><button role="tab" id="tab-overview" aria-controls="overview" aria-selected="false" tabindex="-1">Overview</button><button role="tab" id="tab-details" aria-controls="details" aria-selected="false" tabindex="-1">Technical details</button></div></div></div><main><div id="overview" role="tabpanel" aria-labelledby="tab-overview" hidden><div class="wrap"><section><p class="eyebrow">The problem</p><h2>The line that explains a failure is usually the line that gets cut</h2>
+<p>Agent tools often shorten each tool result before a later agent reads it, and the simplest way is to keep the first few hundred characters. For a failed command, the decisive line usually sits at the end of a long traceback or test log.</p>
+<div class="stats"><div><b>176 → 473</b><span>of 724 key error lines kept in 600 characters, across 208 unseen repositories</span></div><div><b>0</b><span>results over budget, across 1,884 real failures</span></div><div><b>0</b><span>runtime dependencies</span></div></div></section>
+<section><p class="eyebrow">Before and after</p><h2>Try it on real failures</h2><p>This runs the actual library in your browser. Change the budget or paste your own output.</p><div class="demo" id="evidence-demo">
+<div class="controls"><div class="chips" role="group" aria-label="Choose a real failure"><button class="chip" data-example="0" aria-pressed="true">AttributeError</button><button class="chip" data-example="1" aria-pressed="false">ValueError</button><button class="chip" data-example="2" aria-pressed="false">UnicodeDecodeError</button><button class="chip" data-example="custom" aria-pressed="false">Paste your own</button></div>
+<label class="budget">Budget <input id="budget" type="range" min="200" max="1000" step="50" value="600"> <output id="budget-value">600</output></label></div>
+<textarea id="custom-output" hidden aria-label="Failed command output" placeholder="Paste the output of a failed command. It stays in this page."></textarea>
+<p class="cmd" id="demo-command"></p>
+<div class="compare"><div class="panel"><h3>First characters</h3><div class="verdict" id="before-verdict"></div><pre id="before-text" tabindex="0"></pre></div>
+<div class="panel"><h3>Error evidence</h3><div class="verdict" id="after-verdict"></div><pre id="after-text" tabindex="0"></pre></div></div></div></section>
+<section><p class="eyebrow">Results</p><h2>Measured on repositories it had never seen</h2><p>The unseen set is one session from each of 208 public repositories, chosen by a method frozen before selection. The development set is higher because the selection was tuned on it.</p>
+<div class="bars" role="img" aria-label="Key error lines kept before and after"><div class="bargroup">Unseen: 208 repositories</div><div class="barrow"><div>First 600 characters</div><div class="track"><div class="fill" style="width:24.3%"></div></div><div class="num">176 of 724</div></div><div class="barrow"><div>Error evidence</div><div class="track"><div class="fill new" style="width:65.3%"></div></div><div class="num">473 of 724</div></div><div class="bargroup">Development: 11 repositories</div><div class="barrow"><div>First 600 characters</div><div class="track"><div class="fill" style="width:32.4%"></div></div><div class="num">233 of 719</div></div><div class="barrow"><div>Error evidence</div><div class="track"><div class="fill new" style="width:99.7%"></div></div><div class="num">717 of 719</div></div></div></section>
+<section><p class="eyebrow">Limits</p><h2>What this does not show</h2><ul>
+<li>On unseen repositories the key line is still lost in 35% of failures.</li>
+<li>The key-line measure is close to what the method selects, so it shows retention, not usefulness on its own.</li>
+<li>The blind usefulness test on unseen repositories includes only cases where the new digest kept the error. See Technical details.</li>
+<li>All sessions are public benchmark runs from coding agents.</li></ul></section></div></div><div id="details" role="tabpanel" aria-labelledby="tab-details" hidden><div class="wrap"><section><p class="eyebrow">How it works</p><h2>One pass, a few chosen lines, a strict budget</h2><div class="flow"><div class="step"><b>Failed tool output</b><span>Any length, even a million lines</span></div><div class="arrow" aria-hidden="true">→</div><div class="step"><b>One pass over lines</b><span>Remembers only a few line positions</span></div><div class="arrow" aria-hidden="true">→</div><div class="step key"><b>Choose the evidence</b><span>Last named error, first error and the line before it, final lines</span></div><div class="arrow" aria-hidden="true">→</div><div class="step"><b>Fit the budget</b><span>Each chosen line reserves room for the ones after it</span></div><div class="arrow" aria-hidden="true">→</div><div class="step"><b>Kept text</b><span>Original order, joined by "...", never over budget</span></div></div><pre style="margin-top:16px">const { errorEvidence, ERROR_EVIDENCE_RE } = require('./src/error-evidence');
+
+const kept = errorEvidence(output, ERROR_EVIDENCE_RE, 600);</pre></section>
+<section><p class="eyebrow">Decisions</p><h2>Why it works this way</h2><div class="grid2"><div><h3>Same budget, better selection</h3><p>A larger limit would also keep the error, but it makes every digest longer for every reader. This change spends the same 600 characters differently, and only on failures.</p></div><div><h3>The smallest change that worked</h3><p>A larger redesign was built first. In a blind test it lost context when nothing had been cut, so it was dropped.</p></div><div><h3>A count is not an error name</h3><p>Lines like <code>1 failed</code> and file names like <code>reproduce_error.py</code> cannot take the slot reserved for the line that names the error.</p></div><div><h3>Every chosen line keeps room</h3><p>Each line reserves space for the lines after it, so one very long line cannot crowd out the final lines.</p></div><div><h3>Linear, with little memory</h3><p>A single pass keeps a few line positions, so a million-line log needs no line array.</p></div><div><h3>Safe text boundaries</h3><p>The result never exceeds the budget in UTF-16 units and never splits an emoji or other surrogate pair.</p></div></div></section>
+<section><p class="eyebrow">Blind test</p><h2>Does the kept line help the next agent?</h2><p>Inside a real agent-session digest, Claude Haiku wrote a resume note from one digest. Claude Sonnet graded each pair against the full session without knowing which digest produced which note. The score is the preference difference, from -2 to +2.</p>
+<div class="ci"><div class="cirow"><div>Development, error had been lost (n=60)</div><div class="ciplot"><div class="zero"></div><div class="range" style="left:65.0%;width:19.2%"></div><div class="dot" style="left:75.0%"></div></div><div class="num">+1.00 [+0.60, +1.37]</div></div><div class="cirow"><div>Unseen, error had been lost (n=32)</div><div class="ciplot"><div class="zero"></div><div class="range" style="left:72.0%;width:20.2%"></div><div class="dot" style="left:82.8%"></div></div><div class="num">+1.31 [+0.88, +1.69]</div></div><div class="cirow"><div>Development, error was kept (n=20)</div><div class="ciplot"><div class="zero"></div><div class="range" style="left:35.0%;width:25.0%"></div><div class="dot" style="left:47.5%"></div></div><div class="num">-0.10 [-0.60, +0.40]</div></div><div class="cirow"><div>Unseen, error was kept (n=8)</div><div class="ciplot"><div class="zero"></div><div class="range" style="left:37.5%;width:62.5%"></div><div class="dot" style="left:68.8%"></div></div><div class="num">+0.75 [-0.50, +2.00]</div></div><div class="axis"><div></div><div><span>old better, -2</span><span>0</span><span>new better, +2</span></div><div></div></div></div>
+<p class="callout">The unseen blind test includes only cases where the new digest kept the error, and its control group is small (8 items, 3 with a banner as the key line).</p></section>
+<section><p class="eyebrow">Limits</p><h2>Known gaps</h2><ul><li>A heuristic picks the named line. A file name followed by <code>: </code> with an error word in it counts as a name.</li><li>Go compile errors with no error word, such as <code>file.go:12: undefined</code>, are not treated as error lines.</li><li>The 60-case blind test informed development, and half of it comes from one repository.</li><li>One model wrote the notes and one graded them.</li><li>The control groups are too small to prove there is no harm.</li></ul></section>
+<section><p class="eyebrow">Reproduce</p><h2>Run it yourself</h2><pre>npm test
+npm run bench</pre><p class="small muted" style="margin-top:14px">The benchmark downloads two public datasets at pinned revisions. Example failures are from "OpenHands Trajectories with Qwen3-Coder-480B-A35B-Instruct" (Trofimova et al., Nebius, 2025, <a href="https://huggingface.co/datasets/nebius/SWE-rebench-openhands-trajectories">dataset</a>, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>), with workspace paths shortened and long runs of spaces reduced for display.</p></section></div></div></main><footer><div class="wrap">error-evidence · Yash Gupta · <a href="https://github.com/yashgix/error-evidence">github.com/yashgix/error-evidence</a></div></footer>
+<script type="application/json" id="examples">[{"repo": "projectmesa/mesa", "label": "AttributeError", "command": "cd /workspace/project && python reproduce_hexgrid_issue.py", "output": "Testing HexGrid neighbor connections...\n/workspace/project/mesa/experimental/cell_space/grid.py:101: UserWarning: Random number generator not specified, this can make models non-reproducible. Please pass a random number generator explicitly\n  super().__init__(capacity=capacity, random=random, cell_klass=cell_klass)\n/workspace/project/mesa/experimental/cell_space/property_layer.py:226: FutureWarning: The property layer functionality and associated classes are experimental. It may be changed or removed in any and all future releases, including patch releases.\nWe would love to hear what you think about this new feature. If you have any thoughts, share them with us here: https://github.com/projectmesa/mesa/discussions/1932\n  layer = PropertyLayer(\nCenter cell coordinate: (2, 2)\nTraceback (most recent call last):\n  File \"/workspace/project/reproduce_hexgrid_issue.py\", line 97, in <module>\n    grid, center_cell, neighbors = test_hexgrid_neighbors()\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/project/reproduce_hexgrid_issue.py\", line 23, in test_hexgrid_neighbors\n    neighbors = list(center_cell.neighbors)\n                     ^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'GridCell' object has no attribute 'neighbors'. Did you mean: 'neighborhood'?\n[The command completed with exit code 1.]\n[Current working directory: /workspace/project]\n[Python interpreter: /opt/conda/envs/testbed/bin/python]\n[Command finished with exit code 1]", "key": "AttributeError: 'GridCell' object has no attribute 'neighbors'. Did you mean: 'neighborhood'?"}, {"repo": "pypa/wheel", "label": "ValueError", "command": "cd /workspace/project && python demo_fix.py", "output": "Wheel Tags Command Fix Demonstration\n==================================================\n\nBEFORE FIX:\n  $ python -m wheel tags ... 2>/dev/null\n  adding 'file1.py'\n  adding 'file2.py'\n  output-wheel-name.whl\n  ^^^ Polluted stdout breaks shell scripts\n\nAFTER FIX:\n  $ python -m wheel tags ... 2>/dev/null\n  output-wheel-name.whl\n  ^^^ Clean stdout for shell scripts!\n\n=== DEMONSTRATING THE FIX ===\nIssue: Shell script usage should work cleanly\nCommand: FIXED_WHEEL_PATH=$(python -m wheel tags ...) 2>/dev/null\n\nMethod 1: Real subprocess call (simulating shell script)\nTraceback (most recent call last):\n  File \"/workspace/project/demo_fix.py\", line 126, in <module>\n    main()\n  File \"/workspace/project/demo_fix.py\", line 123, in main\n    demo_shell_script_usage()\n  File \"/workspace/project/demo_fix.py\", line 31, in demo_shell_script_usage\n    result = subprocess.run([\n  File \"/opt/conda/envs/testbed/lib/python3.9/subprocess.py\", line 500, in run\n    raise ValueError('stdout and stderr arguments may not be used '\nValueError: stdout and stderr arguments may not be used with capture_output.\n[The command completed with exit code 1.]\n[Current working directory: /workspace/project]\n[Python interpreter: /opt/conda/envs/testbed/bin/python]\n[Command finished with exit code 1]", "key": "ValueError: stdout and stderr arguments may not be used with capture_output."}, {"repo": "bskinn/sphobjinv", "label": "UnicodeDecodeError", "command": "cd /workspace/project && sphobjinv suggest -u https://fonttools.readthedocs.io/en/latest/o", "output": "Remote inventory found.\n\nTraceback (most recent call last):\n  File \"/opt/conda/envs/testbed/bin/sphobjinv\", line 8, in <module>\n    sys.exit(main())\n  File \"/workspace/project/src/sphobjinv/cli/core.py\", line 214, in main\n    do_suggest(inv, params)\n  File \"/workspace/project/src/sphobjinv/cli/core.py\", line 109, in do_suggest\n    results = inv.suggest(\n  File \"/workspace/project/src/sphobjinv/inventory.py\", line 530, in suggest\n    for match, score in fwp.extract(name, srch_list, limit=None)\n  File \"/workspace/project/src/sphobjinv/_vendored/fuzzywuzzy/process.py\", line 60, in extract\n    processed = processor(choice)\n  File \"/workspace/project/src/sphobjinv/_vendored/fuzzywuzzy/process.py\", line 51, in <lambda>\n    processor = lambda x: utils.asciidammit(x)\n  File \"/workspace/project/src/sphobjinv/_vendored/fuzzywuzzy/utils.py\", line 17, in asciidammit\n    return asciionly(s)\n  File \"/workspace/project/src/sphobjinv/_vendored/fuzzywuzzy/utils.py\", line 12, in asciionly\n    return s.encode().translate(None, bad_chars).decode()  # B Skinn 2021-12-11\nUnicodeDecodeError: 'utf-8' codec can't decode byte 0xe2 in position 21: invalid continuation byte\n[The command completed with exit code 1.]\n[Current working directory: /workspace/project]\n[Python interpreter: /opt/conda/envs/testbed/bin/python]\n[Command finished with exit code 1]", "key": "UnicodeDecodeError: 'utf-8' codec can't decode byte 0xe2 in position 21: invalid continuation byte"}]</script><script>const NAMES_AN_ERROR = /error|exception|traceback|failed|fatal|panicked|denied|ERR!/i;
+// A count ("1 failed", "2 errors") or a file name says nothing about which error it was. A file-like token is a
+// name when a `: ` follows it (`binascii.Error: ...`, `bash: error.sh: command not found`) and a path otherwise,
+// line numbers included (`reproduce_error.py:19:`, `src/ErrorBoundary.vue`). It stops at `:` and spaces, so
+// `error:foo.c:12` keeps its `error:`.
+const NOT_A_NAME = /\b[1-9]\d* (?:failed|errors?|failures?)\b|[\w./-]+\.[A-Za-z]\w{0,4}\b(?!:(?!\d))/gi;
+// Counts and all-clears that only look like errors ("5 passed, 0 failed", "errors: 0", "no errors").
+const ALL_CLEAR = /\b0 (?:failed|errors?|failures?)\b|\b(?:errors|failures): 0\b|\bno errors?\b|\berror-free\b/gi;
+const isErrorLine = (line, errorRe) => errorRe.test(line.replace(ALL_CLEAR, ''));
+const namesAnError = (line) => isErrorLine(line.replace(NOT_A_NAME, ''), NAMES_AN_ERROR);
+// `line` from `start` to `end`, never splitting a UTF-16 surrogate pair.
+function slicePairs(line, start, end) {
+  if (start > 0 && /[\uDC00-\uDFFF]/.test(line[start])) start += 1;
+  if (end < line.length && /[\uD800-\uDBFF]/.test(line[end - 1])) end -= 1;
+  return line.slice(start, end);
+}
+// `size` characters of `line`, placed so that its first error word stays in view.
+function around(line, errorRe, size) {
+  if (size <= 0) return '';
+  const m = errorRe.exec(line.replace(ALL_CLEAR, (all) => ' '.repeat(all.length)));
+  const start = m ? Math.max(0, Math.min(m.index - Math.floor(size / 4), line.length - size)) : 0;
+  return slicePairs(line, start, start + size);
+}
+const ERROR_EVIDENCE_RE =
+  /error|traceback|exception|failed|fatal:|panicked at|command not found|permission denied|no such file|npm ERR!|exit (?:code|status) [1-9]/i;
+const LINE_SEP = '\n...\n';
+const LINE_MIN = 80; // what each chosen line keeps at least, whatever the lines before it take
+// The [start, end) of each line of `text` without its line break, one at a time: a failed result can have
+// millions of lines, and only the few chosen are kept.
+function* lineSpans(text) {
+  for (let start = 0; start <= text.length;) {
+    const brk = text.indexOf('\n', start);
+    const end = brk === -1 ? text.length : brk;
+    yield [start, end > start && text[end - 1] === '\r' ? end - 1 : end];
+    start = end + 1;
+  }
+}
+function errorEvidence(text, errorRe, budget) {
+  if (text.length <= budget) return text;
+  let first, before, prev, named, last;
+  const tail = [];
+  for (const span of lineSpans(text)) {
+    const line = text.slice(span[0], span[1]);
+    if (line.trim() && tail.push(span) > 2) tail.shift();
+    if (isErrorLine(line, errorRe)) {
+      if (!first) [first, before] = [span, prev];
+      last = span;
+      if (namesAnError(line)) named = span;
+    }
+    prev = span;
+  }
+  const lineOf = (span) => text.slice(span[0], span[1]);
+  // Budget order: the last line naming the error, the first error line, the line before it, the final lines.
+  const order = [named ?? last, first, before, tail[1], tail[0]].filter(
+    (span, k, all) => span && lineOf(span).trim() && all.findIndex((o) => o?.[0] === span[0]) === k,
+  );
+  const kept = [];
+  let left = budget;
+  for (const [k, span] of order.entries()) {
+    const reserved = order.slice(k + 1).reduce((n, o) => n + Math.min(o[1] - o[0], LINE_MIN) + LINE_SEP.length, 0);
+    const take = around(lineOf(span), errorRe, left - (kept.length ? LINE_SEP.length : 0) - reserved);
+    if (!take) continue;
+    kept.push([span[0], take]);
+    left -= take.length + (kept.length > 1 ? LINE_SEP.length : 0);
+  }
+  if (!kept.length) return slicePairs(text, 0, budget);
+  return kept
+    .sort((a, b) => a[0] - b[0])
+    .map(([, take]) => take)
+    .join(LINE_SEP);
+}
+
+function escapeHtml(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function setupTabs(views){const tabs=views.map(v=>document.getElementById('tab-'+v));
+function show(v,focus){views.forEach((x,i)=>{const on=x===v;tabs[i].setAttribute('aria-selected',on);tabs[i].tabIndex=on?0:-1;document.getElementById(x).hidden=!on});if(focus)tabs[views.indexOf(v)].focus();try{history.replaceState(null,'','#'+v)}catch(e){}}
+tabs.forEach((t,i)=>{t.addEventListener('click',()=>{show(views[i]);const bar=document.querySelector('.tabbar');if(window.scrollY>bar.offsetTop)window.scrollTo({top:bar.offsetTop})});t.addEventListener('keydown',e=>{const d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(d){e.preventDefault();show(views[(i+d+views.length)%views.length],true)}})});
+show(views.includes(location.hash.slice(1))?location.hash.slice(1):views[0])}
+
+const KEY=/(error|exception|traceback|failed|fatal)/i,SOURCE=/\S+\.(?:[cm]?[jt]sx?|py|rs|go|java|rb|c|cc|cpp|h)\b/gi;
+function keyLine(o){const l=o.split('\n').map(x=>x.trim()).filter(x=>KEY.test(x.replace(SOURCE,''))&&!x.startsWith('[Command'));return(l[l.length-1]||'').replace(/^[=\-_*#~\s]+|[=\-_*#~\s]+$/g,'').slice(0,120)}
+function readable(s){return s.replace(/\x1b\[[0-9;]*[A-Za-z]/g,'').replace(/ {3,}/g,'  ')}
+function marked(text,key){const shown=readable(text),k=readable(key);if(!k||!shown.includes(k))return escapeHtml(shown);const i=shown.indexOf(k);return escapeHtml(shown.slice(0,i))+'<mark>'+escapeHtml(k)+'</mark>'+escapeHtml(shown.slice(i+k.length))}
+(function(){const data=JSON.parse(document.getElementById('examples').textContent),$=id=>document.getElementById(id),chips=[...document.querySelectorAll('[data-example]')];let current='0';
+function verdict(el,text,key,n,b){const has=key&&text.includes(key);el.className='verdict '+(has?'yes':key?'no':'');el.textContent=(key?(has?'Keeps the real error':'Real error is missing'):'No error line found')+' · '+n+' of '+b+' characters'}
+function render(){const b=+$('budget').value;$('budget-value').textContent=b;const custom=current==='custom',item=custom?null:data[+current],output=custom?$('custom-output').value:item.output,key=custom?keyLine(output):item.key;$('custom-output').hidden=!custom;
+$('demo-command').innerHTML=custom?(output?'Your output stays in this page.':'Paste output above to compare.'):'<b>'+escapeHtml(item.repo)+'</b> · $ '+escapeHtml(item.command);const before=output.slice(0,b),after=errorEvidence(output,ERROR_EVIDENCE_RE,b);$('before-text').innerHTML=marked(before,key);$('after-text').innerHTML=marked(after,key);verdict($('before-verdict'),before,key,before.length,b);verdict($('after-verdict'),after,key,after.length,b)}
+chips.forEach(c=>c.addEventListener('click',()=>{current=c.dataset.example;chips.forEach(x=>x.setAttribute('aria-pressed',x===c));render()}));$('budget').addEventListener('input',render);$('custom-output').addEventListener('input',render);render()})();
+setupTabs(["overview", "details"]);</script></body></html>

@@ -3,7 +3,9 @@
 ## Key-line retention
 
 `npm run bench` downloads two public datasets of coding-agent sessions at pinned revisions (see [NOTICE](../NOTICE)),
-extracts every failed tool result (1,884 in total), and compares two ways of fitting each into 600 characters.
+extracts every failed tool result (1,884 in total), and compares two ways of fitting each into 600 characters. The
+downloader compares each dataset's current revision with the pinned one and stops if they differ, so a dataset update
+can prevent a future rerun.
 
 A **key line** is the last line of the full output that names an error (`error`, `exception`, `traceback`, `failed` or
 `fatal`, ignoring source-file paths and `[Command ...]` markers), with decoration such as `=====` stripped and cut to

@@ -7,10 +7,13 @@ decisive line (`ValueError: bad shape`, the failing test, `npm ERR! code ERESOLV
 removes exactly what the next reader needs. `errorEvidence` keeps that line inside the same budget.
 
 ```js
-const { errorEvidence, ERROR_EVIDENCE_RE } = require('error-evidence');
+const { errorEvidence, ERROR_EVIDENCE_RE } = require('./src/error-evidence');
 
 errorEvidence(output, ERROR_EVIDENCE_RE, 600); // at most 600 UTF-16 units
 ```
+
+The package is not published to npm. Copy `src/error-evidence.js` into your project, or clone this repository and require
+it by path.
 
 Output that already fits is returned unchanged. Otherwise the result joins these lines with `...`, in this priority:
 
@@ -50,7 +53,8 @@ npm run format:check
 npm run bench       # needs Python 3 and network: downloads two public datasets at pinned revisions, then measures
 ```
 
-`python3 benchmark/fetch.py --limit 3` fetches only a few sessions for a quick check. Needs Node 22 or later. CI runs format, lint and tests on Node 22 and 24. See
+The downloader compares each dataset's current revision with the pinned one and stops if they differ, so a dataset update
+can prevent a future rerun. `python3 benchmark/fetch.py --limit 3` fetches only a few sessions for a quick check. Needs Node 22 or later. CI runs format, lint and tests on Node 22 and 24. See
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the selection works.
 
 ## Licence

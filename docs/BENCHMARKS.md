@@ -15,6 +15,11 @@ selects, so it shows retention, not usefulness on its own.
 | Development (SWE-Gym, 11 repositories)           | 280      | 826            | 719             | 233 (32%)            | 717 (99.7%)     | 0           |
 | Unseen (SWE-rebench, one session per repository) | 208      | 1,058          | 724             | 176 (24%)            | 473 (65%)       | 0           |
 
+This table counts a key line only inside the same failed result, and counts only sessions that have a failed result.
+Counting it anywhere in a whole session digest raises three of the four figures, because a digest can repeat the line in another result. On the unseen set the first
+600 characters give 203 and `errorEvidence` gives 477. On the development set they give 247 and 717, so only the first-600
+figure rises. The ranking does not change.
+
 The development set is higher because the selection was tuned on those sessions. The unseen set excludes the 11
 development repositories by exact name, which does not rule out forks or shared issues. Results are in
 `results/recall.json`.
@@ -27,7 +32,7 @@ These tests ran inside a session-digest builder that previously cut every tool r
 For each case, Claude Haiku 5.5 wrote a resume note from one digest only. Claude Sonnet 5.5 graded the pair against the
 full session without knowing which digest produced which note. The preference score is 2 for the preferred note, 0 for the
 other, and 1 each for a tie; the interval is a 2,000-sample bootstrap over items. The method was frozen before any model call. The test code and
-raw records are not part of this repository.
+raw records are not part of this repository, so these figures cannot be reproduced from it.
 
 | Test                                              | Items | Prefer new / old / tie | Difference (95% CI)  |
 | ------------------------------------------------- | ----- | ---------------------- | -------------------- |
@@ -46,8 +51,8 @@ In the unseen test the note names the error 1.81 of 2 on average with the new di
   characters as their key line. Only 5 say anything about harm.
 - The development test informed the design, half of its failing cases come from one repository, and one run needed a
   repair (an answer in Python-style quotes was converted to JSON with its content unchanged).
-- The unseen test first stopped at 16 of 40 items for lack of funding (+1.64 on 11 items). Funding was extended and all
-  40 were graded. The final gain is smaller.
+- The unseen test first stopped at 16 of 40 items (+1.64 on 11 items). All 40 were then graded, and the final gain is
+  smaller.
 - An early version of the retention measure treated a banner such as `=====` as a key line, which overstated the
   unseen counts for both methods. `benchmark/measure.js` strips such decoration.
 - One note model and one grader. All sessions are public benchmark runs, not real users' sessions.
